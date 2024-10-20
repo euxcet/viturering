@@ -1,4 +1,4 @@
-package com.euxcet.viturering
+package com.euxcet.viturering.ring
 
 import android.accessibilityservice.AccessibilityService
 import android.app.Service

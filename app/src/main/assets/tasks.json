@@ -1,0 +1,97 @@
+{
+  "userID": "userA005",
+  "currentDay": 8,
+  "date": "2024-08-13",
+  "tasks": [
+    {
+      "taskName": "刷牙",
+      "taskID": "task001",
+      "interval": 120,
+      "startTime": "06:00:00",
+      "endTime": "08:00:00",
+      "notifTime": [
+        {"time": "06:00:00"},
+        {"time": "06:40:00"},
+        {"time": "07:20:00"}
+      ],
+      "suggestTime": 10.0,
+      "cutoffTime": 15.0,
+      "taskIMG": "ic_brush_teeth"
+    },
+    {
+      "taskName": "喝水",
+      "taskID": "task002",
+      "interval": 120,
+      "startTime": "08:30:00",
+      "endTime": "10:30:00",
+      "notifTime": [
+        {"time": "08:30:00"},
+        {"time": "09:10:00"},
+        {"time": "09:50:00"}
+      ],
+      "suggestTime": 5.0,
+      "cutoffTime": 7.5,
+      "taskIMG": "ic_drink_water"
+    },
+    {
+      "taskName": "吃饭",
+      "taskID": "task003",
+      "interval": 120,
+      "startTime": "11:00:00",
+      "endTime": "12:20:00",
+      "notifTime": [
+        {"time": "11:00:00"},
+        {"time": "11:40:00"},
+        {"time": "12:20:00"}
+      ],
+      "suggestTime": 30.0,
+      "cutoffTime": 45.0,
+      "taskIMG": "ic_eat"
+    },
+    {
+      "taskName": "晾衣服",
+      "taskID": "task004",
+      "interval": 120,
+      "startTime": "14:00:00",
+      "endTime": "16:00:00",
+      "notifTime": [
+        {"time": "14:00:00"},
+        {"time": "14:40:00"},
+        {"time": "15:20:00"}
+      ],
+      "suggestTime": 20.0,
+      "cutoffTime": 30.0,
+      "taskIMG": "ic_hang_clothes"
+    },
+    {
+      "taskName": "洗菜",
+      "taskID": "task005",
+      "interval": 120,
+      "startTime": "17:00:00",
+      "endTime": "19:00:00",
+      "notifTime": [
+        {"time": "17:00:00"},
+        {"time": "17:40:00"},
+        {"time": "18:20:00"}
+      ],
+      "suggestTime": 15.0,
+      "cutoffTime": 22.5,
+      "taskIMG": "ic_wash_vegetables"
+    },
+    {
+      "taskName": "吃药",
+      "taskID": "task006",
+      "interval": 120,
+      "startTime": "20:00:00",
+      "endTime": "22:00:00",
+      "notifTime": [
+        {"time": "20:00:00"},
+        {"time": "20:40:00"},
+        {"time": "21:20:00"}
+      ],
+      "suggestTime": 5.0,
+      "cutoffTime": 7.5,
+      "taskIMG": "ic_take_medicine"
+    }
+  ]
+}

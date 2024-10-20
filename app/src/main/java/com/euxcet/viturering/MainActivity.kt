@@ -1,147 +1,76 @@
 package com.euxcet.viturering
 
 import android.Manifest
-import android.content.Intent
-import android.content.pm.ActivityInfo
-import android.graphics.Color
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
-import android.view.WindowManager
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.annotation.RequiresApi
-import androidx.core.view.children
-import com.euxcet.viturering.utils.LanguageUtils
-import com.euxcet.viturering.utils.Permission
-import com.hcifuture.producer.sensor.NuixSensor
-import com.hcifuture.producer.sensor.data.RingTouchEvent
-import com.hcifuture.producer.sensor.external.ring.ringV2.RingV2
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Job
 import javax.inject.Inject
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.ExperimentalComposeUiApi
+import com.euxcet.viturering.ring.RingManager
+import com.euxcet.viturering.ui.common.Entry
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    companion object {
+        private const val NOTIFICATION_PERMISSION_CODE = 1001
+        private const val TAG = "MainActivity"
+    }
+
     @Inject
     lateinit var ringManager: RingManager
 
-    private var overlayView: OverlayView? = null
+    private val isBluetoothConnected = mutableStateOf(false)
 
-    @RequiresApi(Build.VERSION_CODES.S)
+    @ExperimentalFoundationApi
+    @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-        window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-
-        Permission.requestPermissions(this, listOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_NETWORK_STATE,
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.CAMERA,
-            Manifest.permission.INTERNET,
-        ))
-        setContentView(R.layout.main)
-        connectRing()
-    }
-
-    private fun createRingButton(ring: NuixSensor): Button {
-        val ringLayout = findViewById<LinearLayout>(R.id.ringLayout)
-        val button = Button(this@MainActivity)
-        button.text = ring.name
-        if (ringManager.isActive(ring)) {
-            button.setBackgroundColor(Color.rgb(30, 150, 30))
-        } else {
-            button.setBackgroundColor(Color.rgb(220, 220, 220))
+        requestNotificationPermission()
+        val taskID = intent.getStringExtra("taskID")
+        if (taskID != null) {
+            Log.d(TAG, "Received taskID from notification: $taskID")
         }
-        button.setOnClickListener {
-            for (child in ringLayout.children) {
-                if ((child as Button).text == ring.name) {
-                    child.setBackgroundColor(Color.rgb(30, 150, 30))
-                } else {
-                    child.setBackgroundColor(Color.rgb(220, 220, 220))
-                }
-            }
-            ringManager.selectRing(ring)
-        }
-        return button
-    }
-
-    private fun connectRing() {
-        val touchView = findViewById<TextView>(R.id.touchView)
-        val gestureView = findViewById<TextView>(R.id.gestureView)
-        val statusView = findViewById<TextView>(R.id.statusView)
-        val ringLayout = findViewById<LinearLayout>(R.id.ringLayout)
-        ringManager.registerListener {
-            onConnectCallback { // Connect
-                runOnUiThread {
-                    ringLayout.removeAllViews()
-                    for (ring in ringManager.rings()) {
-                        ringLayout.addView(createRingButton(ring))
-                    }
-                }
-            }
-            onGestureCallback { // Gesture
-                runOnUiThread {
-                    val gestureText = "手势: ${LanguageUtils.gestureChinese(it)}"
-                    gestureView.text = gestureText
-                    when (it) {
-                        "pinch" -> {
-                            overlayView?.select()
-                        }
-                        "middle_pinch" -> {
-                            overlayView?.switch()
-                        }
-                        "snap" -> {
-                            val intent = Intent(Settings.ACTION_SETTINGS)
-                            startActivity(intent)
-                        }
-                        "circle_clockwise" -> {
-                            val intent = Intent(this@MainActivity, ObjectActivity::class.java)
-                            startActivity(intent)
-                        }
-                        "touch_ring" -> {
-                            overlayView?.reset()
-                        }
-                    }
-                }
-            }
-            onMoveCallback { // Move
-                runOnUiThread {
-                    overlayView?.move(it.first, it.second)
-                }
-            }
-            onStateCallback { // State
-                runOnUiThread {
-                    val statusText = "连接状态: ${LanguageUtils.statusChinese(it)}"
-                    statusView.text = statusText
-                }
-            }
-            onTouchCallback { // Touch
-                runOnUiThread {
-                    val touchText = "触摸: ${(it.data)}"
-                    touchView.text = touchText
-                    when (it.data) {
-                        RingTouchEvent.BOTTOM_BUTTON_CLICK -> {
-                            overlayView?.reset()
-                        }
-                        RingTouchEvent.TAP -> {
-                            overlayView?.reset()
-                        }
-                        else -> {}
-                    }
-                }
-            }
-        }
+        createNotificationChannel()
         ringManager.connect()
+        setContent {
+            Entry()
+        }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_CODE
+                )
+            }
+        }
     }
 
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "TaskNotificationChannel"
+            val descriptionText = "Channel for Task Notifications"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel("TASK_CHANNEL_ID", name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager: NotificationManager =
+                getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
 }

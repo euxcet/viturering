@@ -1,4 +1,4 @@
-package com.euxcet.viturering
+package com.euxcet.viturering.ring
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -9,21 +9,10 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
-import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.hcifuture.producer.detector.GestureDetector
-import com.hcifuture.producer.detector.OrientationDetector
-import com.hcifuture.producer.sensor.NuixSensorManager
-import com.hcifuture.producer.sensor.NuixSensorState
-import com.hcifuture.producer.sensor.data.RingTouchData
-import com.hcifuture.producer.sensor.data.RingTouchEvent
-import com.hcifuture.producer.sensor.external.ring.RingSpec
+import com.euxcet.viturering.IRingService
+import com.euxcet.viturering.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class RingService : Service() {

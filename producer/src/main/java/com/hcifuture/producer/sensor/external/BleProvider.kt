@@ -33,10 +33,10 @@ class BleProvider @Inject constructor(
 
     @SuppressLint("MissingPermission")
     override fun scan(): Flow<List<NuixSensor>> {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN)
-                == PackageManager.PERMISSION_DENIED) {
-            return flowOf()
-        }
+//        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN)
+//                == PackageManager.PERMISSION_DENIED) {
+//            return flowOf()
+//        }
         val aggregator = BleScanResultAggregator()
         Log.e("Nuix", "Scanning")
         return BleScanner(context).scan()

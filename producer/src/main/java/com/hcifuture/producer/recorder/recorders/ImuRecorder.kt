@@ -36,13 +36,13 @@ class ImuRecorder {
                 .onEach {
                     collectors.addAll(it.defaultCollectors.values)
                 }
-            nuixSensorManager.ringV1s()
-                .onEach {
-                    collectors.addAll(it.defaultCollectors.values)
-                }
+            if (nuixSensorManager.defaultRing.target != null) {
+                collectors.addAll(nuixSensorManager.defaultRing.target!!.defaultCollectors.values)
+            }
             return Recorder(
                 collectors = collectors,
-                trigger = trigger,
+                trigger = null,
+//                trigger = trigger,
                 fileDataset = fileDataset,
                 uploader = uploader,
             )

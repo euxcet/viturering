@@ -4,6 +4,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.util.Log
 
 import com.hcifuture.producer.recorder.Collector
 import com.hcifuture.producer.recorder.collectors.BytesDataCollector

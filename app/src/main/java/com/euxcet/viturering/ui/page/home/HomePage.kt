@@ -74,7 +74,7 @@ fun HomePage(
                                 modifier = Modifier.size(26.dp)
                             )
                             Spacer(modifier = Modifier.width(2.dp))
-                            androidx.compose.material.Text(
+                            Text(
                                 text = viewStates.stateText,
                                 color = viewStates.stateColor,
                                 fontWeight = FontWeight.Bold,
@@ -133,10 +133,8 @@ fun HomePage(
             }
 
 
-
             Text (
-                text = "当前任务：",
-//                text = "当前任务：$taskName",
+                text = "当前任务：" + (viewStates.user.currentTask?.taskName ?: ""),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
@@ -145,32 +143,32 @@ fun HomePage(
                     .padding(16.dp)
             )
 
-//            if (taskImage != null) {
-//                Image(
-//                    painter = taskImage,
-//                    contentDescription = "任务图片",
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(240.dp)
-//                        .align(Alignment.CenterHorizontally)
-//                        .padding(16.dp)
-//                )
-//            } else {
-//                Box(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(240.dp)
-//                        .align(Alignment.CenterHorizontally)
-//                        .padding(16.dp),
-//                    contentAlignment = Alignment.Center
-//                ) {
-//                    androidx.compose.material.Text(
-//                        text = "暂无任务图片",
-//                        color = Color.Gray,
-//                        fontSize = 16.sp
-//                    )
-//                }
-//            }
+            if (viewStates.user.currentTaskImage != null) {
+                Image(
+                    painter = painterResource(id = viewStates.user.currentTaskImage!!),
+                    contentDescription = "任务图片",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(240.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .padding(16.dp)
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(240.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "暂无任务图片",
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 

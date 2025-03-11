@@ -7,7 +7,9 @@
         android:required="false" />
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -15,8 +17,10 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".MainApplication"
@@ -29,12 +33,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Commander"
         android:usesCleartextTraffic="true"
+        android:extractNativeLibs="true"
         tools:targetApi="31">
+        <activity
+            android:name=".pages.mic.MICActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"/>
         <activity
             android:name=".pages.model.Car3DActivity"
             android:exported="false"
             android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
         <activity
             android:name=".pages.game.GameActivity"
             android:exported="false"
@@ -101,6 +111,11 @@
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="connectedDevice" />
+        <service
+            android:name=".voice.StereoVoiceService"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="microphone" />
 
         <activity
             android:name=".MainActivity"

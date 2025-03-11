@@ -62,6 +62,7 @@ class MainActivity : ComponentActivity() {
             Manifest.permission.BLUETOOTH_SCAN,
             Manifest.permission.CAMERA,
             Manifest.permission.INTERNET,
+            Manifest.permission.POST_NOTIFICATIONS
         ))
         setContentView(R.layout.main)
         findViewById<TextView>(R.id.toHome).setOnClickListener {

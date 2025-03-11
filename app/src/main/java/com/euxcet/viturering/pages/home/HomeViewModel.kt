@@ -7,6 +7,7 @@ import android.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import com.euxcet.viturering.R
 import com.euxcet.viturering.pages.game.GameActivity
+import com.euxcet.viturering.pages.mic.MICActivity
 import com.euxcet.viturering.pages.model.Car3DActivity
 import com.euxcet.viturering.pages.video.VideoActivity
 import com.euxcet.viturering.pages.writing.HandWritingActivity
@@ -106,6 +107,10 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
             }
             "fake1" -> {
                 val intent = Intent(context, HandWritingActivity::class.java)
+                context.startActivity(intent)
+            }
+            "fake3" -> {
+                val intent = Intent(context, MICActivity::class.java)
                 context.startActivity(intent)
             }
             else -> {

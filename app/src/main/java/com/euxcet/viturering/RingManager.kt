@@ -10,9 +10,11 @@ import com.hcifuture.producer.sensor.NuixSensor
 import com.hcifuture.producer.sensor.NuixSensorManager
 import com.hcifuture.producer.sensor.NuixSensorState
 import com.hcifuture.producer.sensor.data.RingTouchData
+import com.hcifuture.producer.sensor.data.RingV2AudioData
 import com.hcifuture.producer.sensor.external.ring.RingSpec
 import com.hcifuture.producer.sensor.external.ring.ringV1.RingV1
 import com.hcifuture.producer.sensor.external.ring.ringV2.RingV2
+import com.hcifuture.producer.sensor.external.ring.ringV2.RingV2Spec
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -36,6 +38,7 @@ class RingManager @Inject constructor(
         internal var planeEventCallback: ((TouchState) -> Unit)? = null
         internal var planeMoveCallback: ((Pair<Float, Float>) -> Unit)? = null
         internal var planeCharacterCallback: ((CharacterResult) -> Unit)? = null
+        internal var micDataCallback: ((RingV2AudioData) -> Unit)? = null
 
         fun onTouchCallback(callback: ((RingTouchData) -> Unit)) {
             touchCallback = callback
@@ -67,6 +70,10 @@ class RingManager @Inject constructor(
 
         fun onPlaneCharacterCallback(callback: ((CharacterResult) -> Unit)) {
             planeCharacterCallback = callback
+        }
+
+        fun onMicDataCallback(callback: ((RingV2AudioData) -> Unit)) {
+            micDataCallback = callback
         }
     }
 
@@ -128,6 +135,22 @@ class RingManager @Inject constructor(
         CoroutineScope(Dispatchers.Default).launch {
             if (nuixSensorManager.defaultRing.target is RingV2) {
                 (nuixSensorManager.defaultRing.target as RingV2).closeIMU()
+            }
+        }
+    }
+
+    fun openMic() {
+        CoroutineScope(Dispatchers.Default).launch {
+            if (nuixSensorManager.defaultRing.target is RingV2) {
+                (nuixSensorManager.defaultRing.target as RingV2).openMic()
+            }
+        }
+    }
+
+    fun closeMic() {
+        CoroutineScope(Dispatchers.Default).launch {
+            if (nuixSensorManager.defaultRing.target is RingV2) {
+                (nuixSensorManager.defaultRing.target as RingV2).closeMic()
             }
         }
     }
@@ -212,6 +235,16 @@ class RingManager @Inject constructor(
                     listener.stateCallback?.invoke(ring.status)
                 }
                 delay(1000)
+            }
+        }
+
+        // mic
+        CoroutineScope(Dispatchers.IO).launch {
+            val ring = nuixSensorManager.defaultRing
+            ring.getProxyFlow<RingV2AudioData>(RingSpec.audioFlowName(ring))?.collect {
+                if (::listener.isInitialized) {
+                    listener.micDataCallback?.invoke(it)
+                }
             }
         }
 

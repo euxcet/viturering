@@ -163,7 +163,7 @@ class RingMicRecorder(
         }
         Log.e("RingV2", "start record")
         if (nuixSensorManager.defaultRingV2.target == null) {
-            nuixSensorManager.refreshDefaultSensors()
+//            nuixSensorManager.refreshDefaultSensors()
         }
         recordJob?.cancel()
         (nuixSensorManager.defaultRingV2.target as RingV2?)?.let { ring ->
@@ -186,9 +186,9 @@ class RingMicRecorder(
                        // val md5Str = BigInteger(1, md.digest(data)).toString(16).padStart(32, '0')
                        // dataTimeMap[md5Str] = Pair<Int, Long>(it.sequenceId, System.currentTimeMillis())
                        //Log.e("RingV2Data", "write audio data, seq: ${it.sequenceId}, len: ${it.length}, result: $writeResult")
-                       if (writeResult != ErrorCode.SUCCESS) {
-                           Log.e(TAG, "write audio data fail")
-                       }
+//                       if (writeResult != ErrorCode.SUCCESS) {
+//                           Log.e(TAG, "write audio data fail")
+//                       }
                        pcmFile?.appendBytes(data)
                    }
                 }.apply {

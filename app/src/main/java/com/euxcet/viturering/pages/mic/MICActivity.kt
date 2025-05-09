@@ -27,6 +27,83 @@ import java.io.OutputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+
+class ADPCMDecoder {
+    private val stepSizeTable = listOf(
+        7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
+        19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
+        50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
+        130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
+        337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
+        876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
+        2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358,
+        5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
+        15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
+    )
+
+    private val indexTable = listOf(
+        -1, -1, -1, -1, 2, 4, 6, 8, -1, -1, -1, -1, 2, 4, 6, 8
+    )
+
+    private var pcmIndex = 0
+    private var predSample = 0
+
+    fun reset() {
+        pcmIndex = 0
+        predSample = 0
+    }
+
+    fun decode(code: Int): Short {
+        val step = stepSizeTable[pcmIndex]
+        var diff = step shr 3
+
+        if (code and 4 != 0) {
+            diff += step
+        }
+        if (code and 2 != 0) {
+            diff += step shr 1
+        }
+        if (code and 1 != 0) {
+            diff += step shr 2
+        }
+
+        if (code and 8 != 0) {
+            diff = -diff
+        }
+
+        predSample += diff
+
+        predSample = when {
+            predSample > 32767 -> 32767
+            predSample < -32768 -> -32768
+            else -> predSample
+        }
+
+        pcmIndex += indexTable[code]
+        pcmIndex = when {
+            pcmIndex < 0 -> 0
+            pcmIndex > 88 -> 88
+            else -> pcmIndex
+        }
+
+        return predSample.toShort()
+    }
+
+    fun processAudio(audio: ByteArray): ByteArray {
+        val pdm = mutableListOf<Byte>()
+        for (data in audio) {
+            val udata = data.toUByte()
+            pdm.addAll(shortToBytes(decode(udata.toInt() and 0xF)).toMutableList())
+            pdm.addAll(shortToBytes(decode(udata.toInt() shr 4)).toMutableList())
+        }
+        return pdm.toByteArray()
+    }
+
+    private fun shortToBytes(value: Short): ByteArray {
+        return byteArrayOf((value.toInt() and 0xFF).toByte(), ((value.toInt() shr 8) and 0xFF).toByte())
+    }
+}
+
 @AndroidEntryPoint
 class MICActivity : AppCompatActivity() {
 
@@ -40,6 +117,10 @@ class MICActivity : AppCompatActivity() {
 
     private var inputView: EditText? = null
     private var voiceStatusView: TextView? = null
+
+    private var t0: Long = 0
+    private var count: Long = 0
+    private var decoder = ADPCMDecoder()
 
     val ringDataDir by lazy {
         var dir = getExternalFilesDir("ring_audio")
@@ -75,12 +156,14 @@ class MICActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         connectRing()
+        ringManager.closeIMU()
+        ringManager.openMic()
         XfVoiceUtil.getInstance().setVoiceRecognize(object: XfVoiceUtil.RecognizeListener {
             override fun onRecognize(words: MutableList<String>?) {
                 runOnUiThread {
                     words?.firstOrNull()?.let {
                         inputView?.setText(it)
-                        voiceStatusView?.text = "正在识别..."
+//                        voiceStatusView?.text = "正在识别..."
                     }
                 }
             }
@@ -109,27 +192,32 @@ class MICActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         closeVoice()
+        ringManager.closeMic()
+        ringManager.openIMU()
         XfVoiceUtil.getInstance().setVoiceRecognize(null)
     }
 
     private fun openVoice() {
         try {
+            Log.e("Nuix", "open voice")
+            decoder.reset()
             if (XfVoiceUtil.getInstance().startListening()) {
                 if (!ringDataDir.exists()) {
                     ringDataDir.mkdirs()
                 }
-                pcmFile = File(ringDataDir, "ring_audio.pcm")
-                if (pcmFile?.exists() == true) {
-                    pcmFile?.delete()
-                }
-                ringManager.closeIMU()
-                ringManager.openMic()
+//                pcmFile = File(ringDataDir, "ring_audio.pcm")
+//                if (pcmFile?.exists() == true) {
+//                    pcmFile?.delete()
+//                }
                 runOnUiThread {
                     voiceStatusView?.text = "正在识别..."
                 }
             } else {
                 Log.e(TAG, "开启语音识别失败")
             }
+            t0 = System.currentTimeMillis()
+            count = 0
+            Log.e("Nuix", "open voice done")
         } catch (e: Exception) {
             Log.e(TAG, "开启语音识别错误: $e")
         }
@@ -137,21 +225,21 @@ class MICActivity : AppCompatActivity() {
 
     private fun closeVoice() {
         try {
-            ringManager.closeMic()
+            Log.e("Nuix", "close voice")
             XfVoiceUtil.getInstance().stopListening()
-            ringManager.openIMU()
             runOnUiThread {
                 voiceStatusView?.text = "语音识别结束"
             }
-            pcmFile?.let { pcm ->
-                val timeSuffix = timeFormat(LocalDateTime.now())
-                val wavFile = File(ringDataDir, "ring_audio_${timeSuffix}.wav")
-                try {
-                    PCMToWAV(pcm, wavFile, 1, 8000, 8000, 16)
-                } catch (e: Exception) {
-                    Log.e(TAG, "PCMToWAV error: ${e.message}")
-                }
-            }
+            Log.e("Nuix", "close voice done")
+//            pcmFile?.let { pcm ->
+//                val timeSuffix = timeFormat(LocalDateTime.now())
+//                val wavFile = File(ringDataDir, "ring_audio_${timeSuffix}.wav")
+//                try {
+//                    PCMToWAV(pcm, wavFile, 1, 16000, 16000, 16)
+//                } catch (e: Exception) {
+//                    Log.e(TAG, "PCMToWAV error: ${e.message}")
+//                }
+//            }
         } catch (e: Exception) {
             Log.e(TAG, "关闭语音识别错误: $e")
         }
@@ -165,10 +253,13 @@ class MICActivity : AppCompatActivity() {
                 }
             }
             onMicDataCallback { // Mic
-                Log.e(TAG, "Mic: ${it.data}")
+                count += 1
+                if ((count % 200).toInt() == 0) {
+                    Log.e("Nuix", "    Mic fps: " + (count / ((System.currentTimeMillis() - t0) / 1000)))
+                }
                 try {
-                    val data = it.data.toByteArray()
-                    pcmFile?.appendBytes(data)
+                    val data = decoder.processAudio(it.data.toByteArray())
+//                    pcmFile?.appendBytes(data)
                     val writeResult = XfVoiceUtil.getInstance().writeAudio(data)
                 } catch (e: Exception) {
                     Log.e(TAG, "write audio data error: $e")

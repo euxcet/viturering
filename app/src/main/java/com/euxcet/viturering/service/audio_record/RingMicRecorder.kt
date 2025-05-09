@@ -15,7 +15,6 @@ import com.hcifuture.producer.sensor.data.RingV2AudioData
 import com.hcifuture.producer.sensor.external.ring.RingSpec
 import com.hcifuture.producer.sensor.external.ring.ringV2.RingV2
 import com.hcifuture.producer.sensor.external.ring.ringV2.RingV2Spec
-import com.iflytek.cloud.ErrorCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -162,9 +161,9 @@ class RingMicRecorder(
             return
         }
         Log.e("RingV2", "start record")
-        if (nuixSensorManager.defaultRingV2.target == null) {
+//        if (nuixSensorManager.defaultRingV2.target == null) {
 //            nuixSensorManager.refreshDefaultSensors()
-        }
+//        }
         recordJob?.cancel()
         (nuixSensorManager.defaultRingV2.target as RingV2?)?.let { ring ->
             if (!dataDir.exists()) {
@@ -197,11 +196,6 @@ class RingMicRecorder(
                     }
                 }
                 ring.openMic()
-//                ring.writeNonLinearLED(
-//                    shortArrayOf(0, 0, 0, 0),
-//                    enableRed = false, enableBlue = false, enableGreen = true,
-//                    cycleCnt = 20, playCnt = 3, playMode = RingV2Spec.LED_PLAY_MODE.LOOP
-//                )
             }
         }
     }

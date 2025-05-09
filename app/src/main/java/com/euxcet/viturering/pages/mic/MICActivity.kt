@@ -16,7 +16,6 @@ import com.euxcet.viturering.utils.LanguageUtils
 import com.euxcet.viturering.voice.XfVoiceUtil
 import com.hcifuture.producer.detector.TouchState
 import com.hcifuture.producer.sensor.data.RingTouchEvent
-import com.iflytek.cloud.ErrorCode
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -132,9 +131,6 @@ class MICActivity : AppCompatActivity() {
                 try {
                     val data = it.data.toByteArray()
                     val writeResult = XfVoiceUtil.getInstance().writeAudio(data)
-                    if (writeResult != ErrorCode.SUCCESS) {
-                        Log.e(TAG, "write audio data fail")
-                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "write audio data error: $e")
                 }

@@ -94,7 +94,9 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
         // open card
         when (key) {
             "game" -> {
-                val intent = Intent(context, GameActivity::class.java)
+//                val intent = Intent(context, GameActivity::class.java)
+//                context.startActivity(intent)
+                val intent = Intent(context, com.ellison.flappybird.MainActivity::class.java)
                 context.startActivity(intent)
             }
             "models" -> {

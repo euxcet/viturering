@@ -77,6 +77,9 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material")
+    implementation("androidx.compose.material:material-icons-core")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("io.ktor:ktor-network:2.3.12")
     implementation("io.ktor:ktor-network-tls:2.3.12")
     implementation("com.google.dagger:hilt-android:2.49")
@@ -96,6 +99,8 @@ dependencies {
     implementation("com.github.Giftedcat:Waveform:1.3.2")
     implementation(project(":alpha_player"))
     implementation(files("libs/Msc.jar"))
+    // Optional - APIs for SplashScreen, including compatibility helpers on devices prior Android 12
+    implementation("androidx.core:core-splashscreen:1.0.0-alpha01")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")

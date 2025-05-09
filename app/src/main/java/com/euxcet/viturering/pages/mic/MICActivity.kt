@@ -41,7 +41,7 @@ class MICActivity : AppCompatActivity() {
     private var inputView: EditText? = null
     private var voiceStatusView: TextView? = null
 
-    val dataDir by lazy {
+    val ringDataDir by lazy {
         var dir = getExternalFilesDir("ring_audio")
         if (dir == null) {
             dir = File(filesDir, "ring_audio")
@@ -115,10 +115,10 @@ class MICActivity : AppCompatActivity() {
     private fun openVoice() {
         try {
             if (XfVoiceUtil.getInstance().startListening()) {
-                if (!dataDir.exists()) {
-                    dataDir.mkdirs()
+                if (!ringDataDir.exists()) {
+                    ringDataDir.mkdirs()
                 }
-                pcmFile = File(dataDir, "ring_audio.pcm")
+                pcmFile = File(ringDataDir, "ring_audio.pcm")
                 if (pcmFile?.exists() == true) {
                     pcmFile?.delete()
                 }
@@ -145,7 +145,7 @@ class MICActivity : AppCompatActivity() {
             }
             pcmFile?.let { pcm ->
                 val timeSuffix = timeFormat(LocalDateTime.now())
-                val wavFile = File(dataDir, "ring_audio_${timeSuffix}.wav")
+                val wavFile = File(ringDataDir, "ring_audio_${timeSuffix}.wav")
                 try {
                     PCMToWAV(pcm, wavFile, 1, 8000, 8000, 16)
                 } catch (e: Exception) {
